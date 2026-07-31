@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Focus</string>
+
+    <string name="action_start">Timer starten</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_stop">Stopp</string>
+
+    <string name="shortcut_60">1 Stunde</string>
+    <string name="shortcut_45">45 Minuten</string>
+    <string name="shortcut_30">30 Minuten</string>
+    <string name="shortcut_20">20 Minuten</string>
+    <string name="shortcut_15">15 Minuten</string>
+    <string name="shortcut_10">10 Minuten</string>
+    <string name="shortcut_5">5 Minuten</string>
+
+    <string name="hint_pick_duration">Zieh am Ring, um eine Dauer einzustellen</string>
+    <string name="hint_timer_active">Der Timer läuft gerade</string>
+    <string name="hint_no_notifications">Ohne Benachrichtigungen bleibt der Timer im Hintergrund unsichtbar</string>
+
+    <string name="channel_running">Laufender Timer</string>
+    <string name="channel_running_desc">Zeigt die Restzeit des laufenden Konzentrationstimers</string>
+    <string name="channel_done">Timer abgelaufen</string>
+    <string name="channel_done_desc">Meldet das Ende der Konzentrationszeit</string>
+
+    <string name="notif_running_title">Konzentration läuft</string>
+    <string name="notif_running_text">%1$d Minuten eingestellt</string>
+    <string name="notif_done_title">Zeit ist um!</string>
+    <string name="notif_done_text">%1$d Minuten Konzentration abgeschlossen</string>
+</resources>
