@@ -13,6 +13,10 @@
     <string name="shortcut_10">10 Minuten</string>
     <string name="shortcut_5">5 Minuten</string>
 
+    <string name="about">About</string>
+    <!-- Absichtlich englisch und nicht übersetzt: so vom Autor gewünscht. -->
+    <string name="about_text">Built by Martin and Claude with ❤️\nVersion: %1$s (%2$s)</string>
+
     <string name="hint_pick_duration">Zieh am Ring, um eine Dauer einzustellen</string>
     <string name="hint_timer_active">Der Timer läuft gerade</string>
     <string name="hint_no_notifications">Ohne Benachrichtigungen bleibt der Timer im Hintergrund unsichtbar</string>

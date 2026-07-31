@@ -2,6 +2,32 @@ plugins {
     id 'com.android.application'
 }
 
+// Signierung: zuerst signing/keystore.properties im Repo, sonst der Schlüsselbund im Home. Ein
+// eigener Pfad geht über -Pfocus.signing=… . Fehlt alles (fremder Rechner, CI ohne Secret), bleibt
+// der Release-Build unsigniert statt den Build zu brechen — Debug funktioniert immer.
+def signingProps = new Properties()
+def signingPropsFile = [
+        providers.gradleProperty('focus.signing').orNull,
+        "${rootDir}/signing/keystore.properties",
+        "${System.getProperty('user.home')}/.keystores/focus/keystore.properties",
+].findResult { it != null && file(it).exists() ? file(it) : null }
+if (signingPropsFile != null) {
+    signingPropsFile.withInputStream { signingProps.load(it) }
+    // storeFile darf relativ zum Projektwurzelverzeichnis stehen, damit ein Klon direkt baut.
+    def store = file(signingProps['storeFile'])
+    signingProps['storeFile'] = (store.absolute ? store : new File(rootDir, signingProps['storeFile'])).path
+}
+
+// Commit-Kennung für den About-Dialog. Bei einem Quell-Zip ohne .git-Verzeichnis fehlt sie einfach.
+def gitSha = 'unbekannt'
+try {
+    gitSha = providers.exec {
+        commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
+    }.standardOutput.asText.get().trim()
+} catch (Exception ignored) {
+    logger.warn('Git-Commit nicht ermittelbar, About-Dialog zeigt "unbekannt"')
+}
+
 android {
     namespace 'de.noisebleed.focus'
     compileSdk 34
@@ -12,12 +38,33 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+        buildConfigField 'String', 'GIT_SHA', "\"${gitSha}\""
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        if (signingProps.containsKey('storeFile')) {
+            release {
+                storeFile file(signingProps['storeFile'])
+                storePassword signingProps['storePassword']
+                keyAlias signingProps['keyAlias']
+                keyPassword signingProps['keyPassword']
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (signingConfigs.findByName('release') != null) {
+                signingConfig signingConfigs.release
+            } else {
+                logger.warn('WARNUNG: keine Signierung konfiguriert, Release-APK bleibt unsigniert')
+            }
         }
     }
 

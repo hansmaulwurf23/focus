@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -206,6 +207,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.about) {
+            showAbout();
+            return true;
+        }
         int minutes = shortcutMinutes(item.getItemId());
         if (minutes <= 0) {
             return super.onOptionsItemSelected(item);
@@ -218,6 +223,14 @@ public class MainActivity extends AppCompatActivity {
         ring.setMinutes(minutes);
         updateActionButton(TimerState.Phase.IDLE);
         return true;
+    }
+
+    private void showAbout() {
+        new MaterialAlertDialogBuilder(this)
+                .setMessage(getString(R.string.about_text,
+                        BuildConfig.VERSION_NAME, BuildConfig.GIT_SHA))
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     private int shortcutMinutes(int itemId) {
