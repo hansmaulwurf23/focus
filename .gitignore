@@ -1,6 +1,11 @@
 *.iml
 .gradle
 /local.properties
+# Signaturmaterial gehoert nicht ins Repo, erst recht nicht in ein oeffentliches
+/signing
+*.jks
+*.keystore
+keystore.properties
 /.idea
 .DS_Store
 /build

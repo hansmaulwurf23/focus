@@ -12,7 +12,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -226,9 +228,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showAbout() {
+        View content = getLayoutInflater().inflate(R.layout.dialog_about, null, false);
+        TextView version = content.findViewById(R.id.about_version);
+        version.setText(getString(R.string.about_version,
+                BuildConfig.VERSION_NAME, BuildConfig.GIT_SHA));
         new MaterialAlertDialogBuilder(this)
-                .setMessage(getString(R.string.about_text,
-                        BuildConfig.VERSION_NAME, BuildConfig.GIT_SHA))
+                .setView(content)
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
     }

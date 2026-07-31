@@ -2,20 +2,24 @@ plugins {
     id 'com.android.application'
 }
 
-// Signierung: zuerst signing/keystore.properties im Repo, sonst der Schlüsselbund im Home. Ein
-// eigener Pfad geht über -Pfocus.signing=… . Fehlt alles (fremder Rechner, CI ohne Secret), bleibt
-// der Release-Build unsigniert statt den Build zu brechen — Debug funktioniert immer.
+// Der Signaturschlüssel liegt bewusst außerhalb des Repos — das Repo ist öffentlich. Der Ordner
+// ~/Documents/Android/own/focus/ wird per Syncthing zwischen den eigenen Rechnern gespiegelt und ist
+// im Backup. Ein anderer Pfad geht über -Pfocus.signing=… . Fehlt der Schlüssel (fremder Klon, CI
+// ohne Secret), bleibt das Release-APK unsigniert statt den Build zu brechen — Debug läuft immer.
 def signingProps = new Properties()
 def signingPropsFile = [
         providers.gradleProperty('focus.signing').orNull,
-        "${rootDir}/signing/keystore.properties",
-        "${System.getProperty('user.home')}/.keystores/focus/keystore.properties",
+        "${System.getProperty('user.home')}/Documents/Android/own/focus/keystore.properties",
 ].findResult { it != null && file(it).exists() ? file(it) : null }
 if (signingPropsFile != null) {
     signingPropsFile.withInputStream { signingProps.load(it) }
-    // storeFile darf relativ zum Projektwurzelverzeichnis stehen, damit ein Klon direkt baut.
-    def store = file(signingProps['storeFile'])
-    signingProps['storeFile'] = (store.absolute ? store : new File(rootDir, signingProps['storeFile'])).path
+    // storeFile wird relativ zur Properties-Datei aufgelöst: der Syncthing-Ordner liegt auf jedem
+    // Rechner woanders (anderer Benutzername), der Schlüssel aber immer daneben.
+    def store = new File(signingProps['storeFile'] as String)
+    if (!store.absolute) {
+        store = new File(signingPropsFile.parentFile, signingProps['storeFile'] as String)
+    }
+    signingProps['storeFile'] = store.path
 }
 
 // Commit-Kennung für den About-Dialog. Bei einem Quell-Zip ohne .git-Verzeichnis fehlt sie einfach.
@@ -36,8 +40,8 @@ android {
         applicationId "de.noisebleed.focus"
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
         buildConfigField 'String', 'GIT_SHA', "\"${gitSha}\""
     }
 
