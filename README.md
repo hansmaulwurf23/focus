@@ -75,3 +75,49 @@ glab release create v1.1 --name "Focus 1.1" --notes "…" \
 
 Achtung: `glab release create` mit angehängter Datei schreibt die Asset-URL mit dem Host
 `gitlab.com` statt dem der eigenen Instanz — deshalb der Weg über `--assets-links` mit fertiger URL.
+
+## Release über CI
+
+`.gitlab-ci.yml` erledigt das alles selbst, sobald ein Tag der Form `v<Ziffer>` gepusht wird: bauen,
+signieren, in die Paket-Registry laden, Release mit Asset-Link anlegen. Für Branches läuft die
+Pipeline bewusst gar nicht.
+
+Der übliche Ablauf ist damit:
+
+```bash
+# versionCode und versionName in app/build.gradle anheben, committen
+git tag -a v1.2 -m "Focus 1.2" && git push origin main && git push origin v1.2
+```
+
+Zwei Prüfungen brechen den Job absichtlich ab, statt ein kaputtes Release zu veröffentlichen: das
+Umbenennen der APK schlägt fehl, wenn mangels Schlüssel nur `app-release-unsigned.apk` entstanden
+ist, und `versionName` im APK muss zum Tag passen — sonst zeigt der About-Dialog etwas anderes an,
+als der Download heißt.
+
+### Einmalige Einrichtung
+
+**Runner mit Docker-Executor.** Das Job-Image ist auf `mobiledevops/android-sdk-image:34.0.0-jdk17`
+gepinnt (JDK 17, `build-tools 34.0.0`, `android-34` — dieselbe Kombination wie lokal). Der Runner
+braucht den Tag `docker`:
+
+```bash
+gitlab-runner register --non-interactive --url https://gitlab.noisebleed.de/ \
+  --token <Runner-Authentifizierungstoken aus Settings → CI/CD → Runners> \
+  --executor docker --docker-image mobiledevops/android-sdk-image:34.0.0-jdk17 \
+  --tag-list docker
+```
+
+**Geschützte CI-Variablen** (Settings → CI/CD → Variables). Alle vier auf *protected*, damit sie nur
+an geschützte Refs herausgegeben werden; das Tag-Muster `v*` ist bereits geschützt:
+
+| Variable | Typ | maskiert | Inhalt |
+|---|---|---|---|
+| `ANDROID_KEYSTORE_B64` | File | nein | `base64 -w0 focus-release.jks` |
+| `ANDROID_KEYSTORE_PASSWORD` | Variable | ja | `storePassword` |
+| `ANDROID_KEY_ALIAS` | Variable | nein | `focus` |
+| `ANDROID_KEY_PASSWORD` | Variable | ja | `keyPassword` |
+
+Der Keystore liegt base64-kodiert in der Variablen, weil CI-Variablen Text sind. Damit existiert eine
+zweite Kopie des Signaturschlüssels in GitLab — das ist der Preis dafür, dass die CI signieren kann.
+Wer das nicht will, baut Releases weiter lokal; die Pipeline schlägt dann fehl, statt unsigniert
+durchzulaufen.

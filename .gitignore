@@ -6,6 +6,10 @@
 *.jks
 *.keystore
 keystore.properties
+# von der CI zur Laufzeit erzeugt
+/.ci-signing
+/build.env
+/Focus-*.apk
 /.idea
 .DS_Store
 /build
