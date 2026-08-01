@@ -48,11 +48,16 @@ build-apk:
     - mv app/build/outputs/apk/release/app-release.apk "Focus-${VERSION}.apk"
     # Unsigniert durchrutschen waere der schlimmste Fall: das APK liesse sich verteilen, aber nie
     # aktualisieren. Deshalb hart pruefen statt nur bauen.
-    - "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "Focus-${VERSION}.apk"
+    - $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs "Focus-${VERSION}.apk"
     # Und der Tag muss zu versionName passen, sonst zeigt der About-Dialog etwas anderes an als der
     # Download heisst.
-    - APK_VERSION=$("$ANDROID_HOME/build-tools/34.0.0/aapt2" dump badging "Focus-${VERSION}.apk" | grep -o "versionName='[^']*'" | cut -d"'" -f2)
-    - test "$APK_VERSION" = "$VERSION" || { echo "Tag $CI_COMMIT_TAG passt nicht zu versionName $APK_VERSION"; exit 1; }
+    - |
+      APK_VERSION=$($ANDROID_HOME/build-tools/34.0.0/aapt2 dump badging "Focus-${VERSION}.apk" \
+        | grep -o "versionName='[^']*'" | cut -d"'" -f2)
+      if [ "$APK_VERSION" != "$VERSION" ]; then
+        echo "Tag $CI_COMMIT_TAG passt nicht zu versionName $APK_VERSION"
+        exit 1
+      fi
     - |
       curl --fail --silent --show-error --header "JOB-TOKEN: $CI_JOB_TOKEN" \
         --upload-file "Focus-${VERSION}.apk" \
