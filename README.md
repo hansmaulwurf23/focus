@@ -39,8 +39,13 @@ bestätigen kann. Voraussetzung ist Android 8 oder neuer.
 
 ## Bauen und installieren
 
+Gebraucht wird ein **JDK 17**. Das in Android Studio mitgelieferte JBR ist inzwischen ein JDK 25,
+das Gradle 8.7 mit `Unsupported class file major version 69` ablehnt — der frühere Pfad
+`/opt/JetBrains/android-studio/jbr` funktioniert deshalb nicht mehr. Ein JDK 17 gibt es als Temurin
+von [adoptium.net](https://adoptium.net), hier liegt es unter `~/.jdks/jdk-17.0.20.1+1`:
+
 ```bash
-JAVA_HOME=/opt/JetBrains/android-studio/jbr ./gradlew assembleDebug
+JAVA_HOME=~/.jdks/jdk-17.0.20.1+1 ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -57,7 +62,7 @@ Ohne diesen Schlüssel lässt sich kein Update über eine installierte Version s
 bedeutet, dass alle Nutzer erst deinstallieren müssten.
 
 ```bash
-JAVA_HOME=/opt/JetBrains/android-studio/jbr ./gradlew assembleRelease
+JAVA_HOME=~/.jdks/jdk-17.0.20.1+1 ./gradlew assembleRelease
 apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk
 ```
 
